@@ -20,33 +20,15 @@ Build AI agent teams that decompose goals into tasks automatically. Define agent
 
 ## Quick Start
 
+Requires Node.js >= 18.
+
 ```bash
 npm install @jackchen_me/open-multi-agent
 ```
 
 Set `ANTHROPIC_API_KEY` (and optionally `OPENAI_API_KEY` or `GITHUB_TOKEN` for Copilot) in your environment.
 
-```typescript
-import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
-
-const orchestrator = new OpenMultiAgent({ defaultModel: 'claude-sonnet-4-6' })
-
-// One agent, one task
-const result = await orchestrator.runAgent(
-  {
-    name: 'coder',
-    model: 'claude-sonnet-4-6',
-    tools: ['bash', 'file_write'],
-  },
-  'Write a TypeScript function that reverses a string, save it to /tmp/reverse.ts, and run it.',
-)
-
-console.log(result.output)
-```
-
-## Multi-Agent Team
-
-This is where it gets interesting. Three agents, one goal:
+Three agents, one goal — the framework handles the rest:
 
 ```typescript
 import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
@@ -91,6 +73,23 @@ console.log(`Success: ${result.success}`)
 console.log(`Tokens: ${result.totalTokenUsage.output_tokens} output tokens`)
 ```
 
+What happens under the hood:
+
+```
+agent_start coordinator
+task_start architect
+task_complete architect
+task_start developer
+task_start developer              // independent tasks run in parallel
+task_complete developer
+task_start reviewer               // unblocked after implementation
+task_complete developer
+task_complete reviewer
+agent_complete coordinator        // synthesizes final result
+Success: true
+Tokens: 12847 output tokens
+```
+
 ## Three Ways to Run
 
 | Mode | Method | When to use |
@@ -106,6 +105,28 @@ console.log(`Tokens: ${result.totalTokenUsage.output_tokens} output tokens`)
 </a>
 
 ## More Examples
+
+<details>
+<summary><b>Single Agent</b> — one agent, one prompt</summary>
+
+```typescript
+import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
+
+const orchestrator = new OpenMultiAgent({ defaultModel: 'claude-sonnet-4-6' })
+
+const result = await orchestrator.runAgent(
+  {
+    name: 'coder',
+    model: 'claude-sonnet-4-6',
+    tools: ['bash', 'file_write'],
+  },
+  'Write a TypeScript function that reverses a string, save it to /tmp/reverse.ts, and run it.',
+)
+
+console.log(result.output)
+```
+
+</details>
 
 <details>
 <summary><b>Task Pipeline</b> — explicit control over task graph and assignments</summary>

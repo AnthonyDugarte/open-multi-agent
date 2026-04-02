@@ -20,37 +20,15 @@
 
 ## 快速开始
 
+需要 Node.js >= 18。
+
 ```bash
 npm install @jackchen_me/open-multi-agent
 ```
 
 在环境变量中设置 `ANTHROPIC_API_KEY`（以及可选的 `OPENAI_API_KEY` 或用于 Copilot 的 `GITHUB_TOKEN`）。
 
-```typescript
-import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
-
-const orchestrator = new OpenMultiAgent({ defaultModel: 'claude-sonnet-4-6' })
-
-// 一个智能体，一个任务
-const result = await orchestrator.runAgent(
-  {
-    name: 'coder',
-    model: 'claude-sonnet-4-6',
-    tools: ['bash', 'file_write'],
-  },
-  'Write a TypeScript function that reverses a string, save it to /tmp/reverse.ts, and run it.',
-)
-
-console.log(result.output)
-```
-
-## 作者
-
-> JackChen — 前 WPS 产品经理，现独立创业者。关注小红书[「杰克西｜硅基杠杆」](https://www.xiaohongshu.com/user/profile/5a1bdc1e4eacab4aa39ea6d6)，持续获取我的 AI Agent 观点和思考。
-
-## 多智能体团队
-
-这才是有意思的地方。三个智能体，一个目标：
+三个智能体，一个目标——框架处理剩下的一切：
 
 ```typescript
 import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
@@ -95,6 +73,27 @@ console.log(`成功: ${result.success}`)
 console.log(`Token 用量: ${result.totalTokenUsage.output_tokens} output tokens`)
 ```
 
+执行过程：
+
+```
+agent_start coordinator
+task_start architect
+task_complete architect
+task_start developer
+task_start developer              // 无依赖的任务并行执行
+task_complete developer
+task_start reviewer               // 实现完成后自动解锁
+task_complete developer
+task_complete reviewer
+agent_complete coordinator        // 综合所有结果
+Success: true
+Tokens: 12847 output tokens
+```
+
+## 作者
+
+> JackChen — 前 WPS 产品经理，现独立创业者。关注小红书[「杰克西｜硅基杠杆」](https://www.xiaohongshu.com/user/profile/5a1bdc1e4eacab4aa39ea6d6)，持续获取我的 AI Agent 观点和思考。
+
 ## 三种运行模式
 
 | 模式 | 方法 | 适用场景 |
@@ -110,6 +109,28 @@ console.log(`Token 用量: ${result.totalTokenUsage.output_tokens} output tokens
 </a>
 
 ## 更多示例
+
+<details>
+<summary><b>单智能体</b> — 一个智能体，一个提示词</summary>
+
+```typescript
+import { OpenMultiAgent } from '@jackchen_me/open-multi-agent'
+
+const orchestrator = new OpenMultiAgent({ defaultModel: 'claude-sonnet-4-6' })
+
+const result = await orchestrator.runAgent(
+  {
+    name: 'coder',
+    model: 'claude-sonnet-4-6',
+    tools: ['bash', 'file_write'],
+  },
+  'Write a TypeScript function that reverses a string, save it to /tmp/reverse.ts, and run it.',
+)
+
+console.log(result.output)
+```
+
+</details>
 
 <details>
 <summary><b>任务流水线</b> — 显式控制任务图和分配</summary>
