@@ -286,7 +286,7 @@ export interface TeamRunResult {
 // ---------------------------------------------------------------------------
 
 /** Valid states for a {@link Task}. */
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'blocked'
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'blocked' | 'skipped'
 
 /** A discrete unit of work tracked by the orchestrator. */
 export interface Task {
@@ -313,13 +313,19 @@ export interface Task {
 // Orchestrator
 // ---------------------------------------------------------------------------
 
-/** Progress event emitted by the orchestrator during a run. */
+/**
+ * Progress event emitted by the orchestrator during a run.
+ *
+ * **v0.3 addition:** `'task_skipped'` — consumers with exhaustive switches
+ * on `type` will need to add a case for this variant.
+ */
 export interface OrchestratorEvent {
   readonly type:
     | 'agent_start'
     | 'agent_complete'
     | 'task_start'
     | 'task_complete'
+    | 'task_skipped'
     | 'task_retry'
     | 'message'
     | 'error'
@@ -337,6 +343,23 @@ export interface OrchestratorConfig {
   readonly defaultApiKey?: string
   readonly onProgress?: (event: OrchestratorEvent) => void
   readonly onTrace?: (event: TraceEvent) => void | Promise<void>
+  /**
+   * Optional approval gate called between task execution rounds.
+   *
+   * After a batch of tasks completes, this callback receives all
+   * completed {@link Task}s from that round and the list of tasks about
+   * to start next. Return `true` to continue or `false` to abort —
+   * remaining tasks will be marked `'skipped'`.
+   *
+   * Not called when:
+   * - No tasks succeeded in the round (all failed).
+   * - No pending tasks remain after the round (final batch).
+   *
+   * **Note:** Do not mutate the {@link Task} objects passed to this
+   * callback — they are live references to queue state. Mutation is
+   * undefined behavior.
+   */
+  readonly onApproval?: (completedTasks: readonly Task[], nextTasks: readonly Task[]) => Promise<boolean>
 }
 
 // ---------------------------------------------------------------------------
