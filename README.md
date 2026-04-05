@@ -29,7 +29,12 @@ Requires Node.js >= 18.
 npm install @jackchen_me/open-multi-agent
 ```
 
-Set `ANTHROPIC_API_KEY` (and optionally `OPENAI_API_KEY` or `GITHUB_TOKEN` for Copilot) in your environment. Local models via Ollama require no API key — see [example 06](examples/06-local-model.ts).
+Set the API key for your provider. Local models via Ollama require no API key — see [example 06](examples/06-local-model.ts).
+
+- `ANTHROPIC_API_KEY`
+- `OPENAI_API_KEY`
+- `GEMINI_API_KEY`
+- `GITHUB_TOKEN` (for Copilot)
 
 Three agents, one goal — the framework handles the rest:
 
@@ -156,6 +161,7 @@ npx tsx examples/01-single-agent.ts
 │  - stream()       │    │  - AnthropicAdapter  │
 └────────┬──────────┘    │  - OpenAIAdapter     │
          │               │  - CopilotAdapter    │
+         │               │  - GeminiAdapter     │
          │               └──────────────────────┘
 ┌────────▼──────────┐
 │  AgentRunner      │    ┌──────────────────────┐
@@ -183,6 +189,7 @@ npx tsx examples/01-single-agent.ts
 | OpenAI (GPT) | `provider: 'openai'` | `OPENAI_API_KEY` | Verified |
 | Grok (xAI)   | `provider: 'grok'` | `XAI_API_KEY` | Verified |
 | GitHub Copilot | `provider: 'copilot'` | `GITHUB_TOKEN` | Verified |
+| Gemini | `provider: 'gemini'` | `GEMINI_API_KEY` | Verified |
 | Ollama / vLLM / LM Studio | `provider: 'openai'` + `baseURL` | — | Verified |
 | llama.cpp server | `provider: 'openai'` + `baseURL` | — | Verified |
 
